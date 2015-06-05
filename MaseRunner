@@ -1,0 +1,102 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+public class MaseRunner {
+	public static void main(String[] args) {
+
+		String mazeCode = null;
+		//This is a variable path, so that we know which directions the users got to get out
+		String path= null;
+		/* management of the user's interface */
+		/* invoke the get method then the post method */
+		/* read the response of the messages and how to handel them */
+
+	
+		try {
+
+			URL url = new URL("http://localhost:8080/mazes");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setRequestProperty("Accept", "application/json");
+
+			if (conn.getResponseCode() != 200) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
+
+			String output;
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				System.out.println(output);
+			}
+			mazeCode = output;
+
+			conn.disconnect();
+
+		} catch (MalformedURLException e) {
+
+			e.printStackTrace();
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+
+		/* ******************* POST ************************ */
+		// Here we put the url of the service from with we will get the result of the move
+		// Accordingly to the user's moovement we will check the result of the service
+		try {
+
+			URL url = new URL("http://localhost:8080/mazes/" + mazeCode
+					+ "/position");
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "application/json");
+//If the user choose the south option
+			String input2 = "{\"from\":100,\"direction\":\"SOUTH\"}";
+
+			OutputStream os = conn.getOutputStream();
+			os.write(input2.getBytes());
+			os.flush();
+
+			if (conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
+				throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
+
+			String output;
+			System.out.println("Output from Server .... \n");
+			while ((output = br.readLine()) != null) {
+				System.out.println(output);
+			}
+
+			conn.disconnect();
+
+		} catch (MalformedURLException e) {
+
+			e.printStackTrace();
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+
+		/* finally i shoud print the way i find the exit */
+
+	}
+
+}
